@@ -1,0 +1,59 @@
+{
+  "rewards": [
+    {
+      "name": "🪙 5000 gold",
+      "coins": 100,
+      "code": "35409180"
+    },
+    {
+      "name": "👤 Alpha Avatar",
+      "coins": 350,
+      "code": "79961809"
+    },
+    {
+      "name": "🔵 Rare Chest",
+      "coins": 500,
+      "code": "23691462"
+    },
+    {
+      "name": "🗝️ x15 Keys",
+      "coins": 750,
+      "code": "32256201"
+    },
+    {
+      "name": "🟣 Epic Chest",
+      "coins": 1000,
+      "code": "47507341"
+    },
+    {
+      "name": "⭐ 5000 Xp",
+      "coins": 1500,
+      "code": "22598339"
+    },
+    {
+      "name": "🟡 Legendary Chest",
+      "coins": 2000,
+      "code": "66062265"
+    },
+    {
+      "name": "💎​ 500 Gems",
+      "coins": 2500,
+      "code": "19130402"
+    },
+    {
+      "name": "🟡 Legendary Chest + Epic Chest",
+      "coins": 3000,
+      "code": "09641898"
+    },
+    {
+      "name": "🪙 50000 gold",
+      "coins": 4000,
+      "code": "98710650"
+    },
+    {
+      "name": "🟡 Legendary Chest x2",
+      "coins": 5000,
+      "code": "09641898"
+    }
+  ]
+}

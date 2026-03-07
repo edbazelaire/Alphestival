@@ -1,0 +1,92 @@
+[
+    
+    {
+        "name":         "Starter Pack",
+        "rewards":      {"Packs": ["StarterPack"]},
+        "price":        100,
+        "description":  "Unlock the Starter Pack, containing :\n- 5000 gold\n- 2 Rare Chests"
+    },
+    {
+        "name":         "Fireworks Pack",
+        "rewards":      {"Packs": ["FireworksPack"]},
+        "price":        100,
+        "description":  "Unlock the Starter Pack, containing :\n- 5000 gold\n- 2 Ember Chests"
+    },
+    {
+        "name":         "Mastery I",
+        "rewards":      {"Mastery": {"tiers": 3, "character": "any"}},
+        "price":        100,
+        "description":  "Unlock the Mastery III for any character of your choice."
+    },
+    {
+        "name":         "Mastery II",
+        "rewards":      {"Mastery": {"tiers": 3, "character": "any"}},
+        "price":        250,
+        "description":  "Unlock the Mastery III for any character of your choice."
+    },
+
+
+    {
+        "name":         "Mastery III",
+        "rewards":      {"Mastery": {"tiers": 3, "character": "any"}},
+        "price":        500,
+        "description":  "Unlock the Mastery III for any character of your choice."
+    },
+    {
+        "name":         "Frozen Pack",
+        "rewards":      {"Packs": ["FrozenPack"]},
+        "price":        500,
+        "description":  "The Frozen Pack contains the basic items needed to start the game."
+    },
+    {
+        "name":         "Fire Pack",
+        "rewards":      {"Packs": ["FirePack"]},
+        "price":        500,
+        "description":  "The Fire Pack contains the basic items needed to start the game."
+    },
+    {
+        "name":         "Void Pack",
+        "rewards":      {"Packs": ["VoidPack"]},
+        "price":        500,
+        "description":  "The Void Pack contains the basic items needed to start the game."
+    },
+    {
+        "name":         "Poison Pack",
+        "rewards":      {"Packs": ["PoisonPack"]},
+        "price":        500,
+        "description":  "The Poison Pack contains the basic items needed to start the game."
+    },
+
+
+
+    {
+        "name":         "Unique Avatar",
+        "rewards":      {},
+        "price":        2000,
+        "description":  "Gain an exclusive avatar designed for you"
+    },
+    {
+        "name":         "Unique Border",
+        "rewards":      {},
+        "price":        2000,
+        "description":  "Gain an exclusive border designed for you"
+    },
+    {
+        "name":         "Unique Title",
+        "rewards":      {},
+        "price":        2000,
+        "description":  "Gain an exclusive title designed for you"
+    },
+    {
+        "name":         "Chest Boost - 6 months",
+        "rewards":      {"Boosts": [{"name": "ChestSpeedBoost", "Duration": 2592000}]},
+        "price":        2000,
+        "description":  "For 6 months, the chest boost will be active, reducing the unlock time period of chests by 50%."
+    },
+    {
+        "name":         "Golden Key - 6 months",
+        "rewards":      {"Boosts": [{"name": "GoldenKey", "Duration": 2592000}]},
+        "price":        2500,
+        "description":  "The golden key is a key that never gets consumed. For 6 months, you can play Arena games for free."
+    }
+]

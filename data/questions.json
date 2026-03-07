@@ -1,0 +1,26 @@
+[
+    {
+        "question": "Will the game be released in 2026?",
+        "options": ["Yes", "No", "I don't think so", "Maybe one day"],
+        "answer": "Yes",
+        "reward": 15
+    },
+    {
+        "question": "What was the game's original name?",
+        "options": ["Archer of goat", "Rko", "Archer Hero", "Piou piou piou bang bang"],
+        "answer": "Rko",
+        "reward": 15
+    },
+    {
+        "question": "When the alpha was released, one of these characters did not exist, which one?",
+        "options": ["Alexander", "Marcus", "Srug", "Bulgor"],
+        "answer": "Bulgor",
+        "reward": 15
+    },
+    {
+        "question": "On release, what was Marcus's rarety ?",
+        "options": ["Common (grey)", "Rare (blue)", "Epic (purple)", "Legendary (gold)"],
+        "answer": "Legendary (gold)",
+        "reward": 15
+    }
+]

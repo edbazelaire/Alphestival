@@ -1,0 +1,24 @@
+# Environment and secrets (never commit)
+.env
+.env.local
+*.env
+
+# Database (optional: remove if you want DB in repo)
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+.env
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
