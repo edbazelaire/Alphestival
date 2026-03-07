@@ -987,6 +987,86 @@ class Database:
                 """
             )
 
+    def reset_all(self) -> None:
+        """Wipe all data and reset config tables to defaults (brand-new state)."""
+        with self.connection() as conn:
+            conn.execute("DELETE FROM users")
+            conn.execute("DELETE FROM bets")
+            conn.execute("DELETE FROM question_votes")
+            conn.execute("DELETE FROM questions")
+            conn.execute("DELETE FROM roulette_bets")
+            conn.execute("DELETE FROM roulette_rounds")
+            conn.execute("DELETE FROM poll_rewards")
+            conn.execute("DELETE FROM community_prize_unlocks")
+            conn.execute("DELETE FROM community_prize_contributions")
+            conn.execute("DELETE FROM community_prize_state")
+            conn.execute("DELETE FROM community_prize_display")
+            conn.execute("DELETE FROM player_links")
+            conn.execute("DELETE FROM ingame_events")
+            conn.execute("DELETE FROM achievement_progress")
+            conn.execute("DELETE FROM achievement_player_claims")
+            conn.execute("DELETE FROM achievement_global_threshold_unlocks")
+            conn.execute("DELETE FROM daily_streaks")
+            conn.execute("DELETE FROM achievements_display")
+            conn.execute("DELETE FROM achievements_live_board_config")
+            conn.execute("DELETE FROM achievements_live_board_messages")
+            conn.execute("DELETE FROM ingame_events_display")
+            conn.execute("DELETE FROM ingame_event_channels")
+            conn.execute("DELETE FROM daily_race_live_board_config")
+            conn.execute("DELETE FROM daily_questions_scheduler")
+            conn.execute("DELETE FROM player_rewards")
+            conn.execute("DELETE FROM shop_reward_purchases")
+            conn.execute("DELETE FROM roulette_reward_cursor")
+
+            conn.execute(
+                "INSERT INTO roulette_reward_cursor (id, current_index) VALUES (1, 0)"
+            )
+            conn.execute(
+                "INSERT INTO community_prize_state (id, total_coins) VALUES (1, 0)"
+            )
+            conn.execute(
+                """
+                INSERT INTO community_prize_display (
+                    id, channel_id, unlocked_message_id, progress_message_id
+                )
+                VALUES (1, 0, 0, 0)
+                """
+            )
+            conn.execute(
+                "INSERT INTO achievements_display (id, channel_id, message_id) VALUES (1, 0, 0)"
+            )
+            conn.execute(
+                """
+                INSERT INTO achievements_live_board_config (
+                    id, channel_id, global_message_id, is_active
+                )
+                VALUES (1, 0, 0, 0)
+                """
+            )
+            conn.execute(
+                "INSERT INTO ingame_events_display (id, channel_id) VALUES (1, 0)"
+            )
+            conn.execute(
+                "INSERT INTO ingame_event_channels (event_type, channel_id) VALUES ('achievement_unlocked', 0)"
+            )
+            conn.execute(
+                "INSERT INTO ingame_event_channels (event_type, channel_id) VALUES ('daily_reward_collected', 0)"
+            )
+            conn.execute(
+                """
+                INSERT INTO daily_race_live_board_config (id, channel_id, message_id, is_active)
+                VALUES (1, 0, 0, 0)
+                """
+            )
+            conn.execute(
+                """
+                INSERT INTO daily_questions_scheduler (
+                    id, channel_id, is_active, current_index, last_question_id, last_poll_message_id, next_rotation_at
+                )
+                VALUES (1, 0, 0, 0, 0, 0, NULL)
+                """
+            )
+
     def get_game_player_id(self, discord_user_id: int) -> str | None:
         with self.connection() as conn:
             row = conn.execute(

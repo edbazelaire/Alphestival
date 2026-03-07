@@ -3,24 +3,66 @@
         "question": "Will the game be released in 2026?",
         "options": ["Yes", "No", "I don't think so", "Maybe one day"],
         "answer": "Yes",
-        "reward": 15
+        "reward": 20
     },
     {
         "question": "What was the game's original name?",
         "options": ["Archer of goat", "Rko", "Archer Hero", "Piou piou piou bang bang"],
         "answer": "Rko",
-        "reward": 15
+        "reward": 20
+    },    
+    {
+        "question": "What was the first arena added to the game ?",
+        "options": ["Frost Arena", "Fire Arena", "Eternal Menagerie", "Northen Lands"],
+        "answer": "Fire Arena",
+        "reward": 20
     },
     {
         "question": "When the alpha was released, one of these characters did not exist, which one?",
         "options": ["Alexander", "Marcus", "Srug", "Bulgor"],
         "answer": "Bulgor",
-        "reward": 15
+        "reward": 20
+    },
+    {
+        "question": "Which of the Frost Arena bosses received the most complaints ?",
+        "options": ["Ice Golem", "MaiHau", "Atassut", "Sikunik"],
+        "answer": "Atassut",
+        "reward": 20
+    },
+    {
+        "question": "Which of these bugs has always been there, and keeps showing up besides having been fixed several times ?",
+        "options": ["Falling of the platform", "Getting stucked in the wall", "Not beeing able to select a spell during fights", "Game crashing when opening a legendary chest"],
+        "answer": "Falling of the platform",
+        "reward": 20
+    },
+    {
+        "question": "When was the v0.0.1 released ?",
+        "options": ["11/2023", "05/2024", "02/2025", "07/2025"],
+        "answer": "05/2024",
+        "reward": 20
     },
     {
         "question": "On release, what was Marcus's rarety ?",
         "options": ["Common (grey)", "Rare (blue)", "Epic (purple)", "Legendary (gold)"],
         "answer": "Legendary (gold)",
-        "reward": 15
+        "reward": 20
+    },
+    {
+        "question": "Which of these characters is a prince ?",
+        "options": ["Lionel", "Alexander", "Marcus", "Bulgor"],
+        "answer": "Lionel",
+        "reward": 20
+    },
+    {
+        "question": "Which of the Frost Arena phases reveived the most complaints ?",
+        "options": ["Frost", "Poison", "Void", "Fire"],
+        "answer": "Poison",
+        "reward": 20
+    },
+    {
+        "question": "What does the icon of the game represents ? (the white circle on a black background)",
+        "options": ["The infinite cycle of mana", "The banner of a prestigious house", "The eye of the demon king", "Nothing, it's just pretty"],
+        "answer": "The eye of the demon king",
+        "reward": 50
     }
 ]

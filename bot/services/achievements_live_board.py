@@ -173,10 +173,3 @@ class AchievementsLiveBoardService:
                     global_message_id=int(replacement.id),
                     is_active=True,
                 )
-
-        discord_user_id = self.db.get_discord_user_id_by_game_player_id(game_player_id)
-        mention = f"<@{discord_user_id}>" if discord_user_id is not None else f"`{game_player_id}`"
-        await channel.send(
-            f"Congratulations {mention} for unlocking **{achievement_id}**! "
-            f"(completion #{completion_count})"
-        )

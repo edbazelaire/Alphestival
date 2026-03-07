@@ -41,7 +41,7 @@
       "code": "19130402"
     },
     {
-      "name": "🟡 Legendary Chest + Epic Chest",
+      "name": "🟡🟣 Legendary + Epic Chest",
       "coins": 3000,
       "code": "09641898"
     },
@@ -51,9 +51,9 @@
       "code": "98710650"
     },
     {
-      "name": "🟡 Legendary Chest x2",
+      "name": "🟡🟡 Legendary Chest x2",
       "coins": 5000,
-      "code": "09641898"
+      "code": "19641898"
     }
   ]
 }

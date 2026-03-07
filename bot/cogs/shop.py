@@ -323,6 +323,39 @@ class ShopCog(commands.Cog):
             ephemeral=True,
         )
 
+    async def start_in_channel(self, channel: discord.TextChannel) -> bool:
+        """Publish shop rewards in the given channel (e.g. after reset_all). Returns True if published."""
+        try:
+            rewards = self._load_rewards()
+        except (ValueError, OSError):
+            return False
+        if not rewards:
+            return False
+        intro = discord.Embed(
+            title="Shop Rewards",
+            description=(
+                "Click **Buy** to purchase a reward.\n"
+                "Each reward is unique: one purchase maximum per player."
+            ),
+            color=discord.Color.blurple(),
+        )
+        intro_message = await channel.send(embed=intro)
+        try:
+            await intro_message.pin()
+        except (discord.Forbidden, discord.HTTPException):
+            pass
+        for reward in rewards:
+            price = int(reward["price"])
+            embed = discord.Embed(
+                title=str(reward["name"]),
+                description=str(reward["description"]),
+                color=_price_color(price),
+            )
+            embed.add_field(name="Price", value=f"**{price}** coins", inline=True)
+            embed.add_field(name="Type", value="Unique purchase", inline=True)
+            await channel.send(embed=embed, view=RewardBuyView(self, reward))
+        return True
+
 
 async def setup(bot: commands.Bot) -> None:
     db: Database = bot.db

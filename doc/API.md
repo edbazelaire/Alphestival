@@ -290,7 +290,7 @@ Completion count increment rules:
 
 Notes:
 
-- Reward for unlocking player uses Tier 5 logic.
+- Reward for unlocking player uses Tier 3 (second tier) logic.
 - Global thresholds are applied at 1 / 3 / 5 / 10 completions.
 - Duplicate achievement per player is ignored (`already_claimed`).
 

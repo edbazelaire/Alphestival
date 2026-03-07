@@ -8,8 +8,17 @@ from discord import app_commands
 from discord.ext import commands
 
 from bot.database import Database
+from bot.main import ALLOWED_CATEGORY_NAME
 from bot.utils.admin_checks import has_admin_role
 from bot.utils.roulette_rewards import RouletteRewardsStore
+
+RESET_ALL_CHANNEL_NAMES = (
+    "daily-questions",
+    "achievements",
+    "daily-rewards-race",
+    "shop",
+    "community-pool",
+)
 
 
 class AdminCog(commands.Cog):
@@ -187,6 +196,115 @@ class AdminCog(commands.Cog):
         self.db.reset_prize_pool()
         await interaction.response.send_message(
             "Community prize pool has been reset to a fresh state."
+        )
+
+    async def _purge_channel_messages(self, channel: discord.TextChannel) -> int:
+        """Delete all messages in the channel. Returns count deleted. Skips if not text channel."""
+        if not isinstance(channel, discord.TextChannel):
+            return 0
+        deleted = 0
+        cutoff = datetime.now(timezone.utc) - timedelta(days=14)
+        try:
+            recent = await channel.purge(limit=None, check=lambda m: m.created_at >= cutoff, bulk=True)
+            deleted += len(recent)
+            async for message in channel.history(limit=None, before=cutoff):
+                try:
+                    await message.delete()
+                    deleted += 1
+                except (discord.Forbidden, discord.NotFound, discord.HTTPException):
+                    pass
+        except (discord.Forbidden, discord.HTTPException):
+            pass
+        return deleted
+
+    @app_commands.default_permissions(manage_guild=True)
+    @app_commands.command(
+        name="reset_all",
+        description="Reset everything (database + channel messages except #rules) and restart channels (admin).",
+    )
+    async def reset_all(self, interaction: discord.Interaction) -> None:
+        if not has_admin_role(interaction):
+            await interaction.response.send_message("Admin only.", ephemeral=True)
+            return
+        guild = interaction.guild
+        if guild is None:
+            await interaction.response.send_message(
+                "This command must be used in a server.",
+                ephemeral=True,
+            )
+            return
+
+        await interaction.response.defer(ephemeral=True, thinking=True)
+
+        category = discord.utils.get(guild.categories, name=ALLOWED_CATEGORY_NAME)
+        if category is None:
+            await interaction.followup.send(
+                f"Category **{ALLOWED_CATEGORY_NAME}** not found.",
+                ephemeral=True,
+            )
+            return
+
+        total_deleted = 0
+        for channel in category.text_channels:
+            if channel.name == "rules":
+                continue
+            total_deleted += await self._purge_channel_messages(channel)
+
+        self.db.reset_all()
+
+        results: list[str] = []
+        channel_by_name = {ch.name: ch for ch in category.text_channels}
+
+        for name in RESET_ALL_CHANNEL_NAMES:
+            channel = channel_by_name.get(name)
+            if channel is None or not isinstance(channel, discord.TextChannel):
+                results.append(f"• **{name}**: channel not found")
+                continue
+            if name == "daily-questions":
+                daily_cog = self.bot.get_cog("DailyQuestionsCog")
+                if daily_cog and hasattr(daily_cog, "start_in_channel"):
+                    ok = await daily_cog.start_in_channel(channel)
+                    results.append(f"• **{name}**: {'started' if ok else 'failed (check data/questions.json)'}")
+                else:
+                    results.append(f"• **{name}**: cog unavailable")
+            elif name == "achievements":
+                ingame = self.bot.get_cog("IngameCog")
+                if ingame and getattr(ingame, "achievements_live_board", None):
+                    await ingame.achievements_live_board.start(channel)
+                    results.append(f"• **{name}**: started")
+                else:
+                    results.append(f"• **{name}**: cog unavailable")
+            elif name == "daily-rewards-race":
+                ingame = self.bot.get_cog("IngameCog")
+                if ingame and getattr(ingame, "daily_race_live_board", None):
+                    await ingame.daily_race_live_board.start(channel)
+                    results.append(f"• **{name}**: started")
+                else:
+                    results.append(f"• **{name}**: cog unavailable")
+            elif name == "shop":
+                shop_cog = self.bot.get_cog("ShopCog")
+                if shop_cog and hasattr(shop_cog, "start_in_channel"):
+                    ok = await shop_cog.start_in_channel(channel)
+                    results.append(f"• **{name}**: {'started' if ok else 'failed (check data/rewards.json)'}")
+                else:
+                    results.append(f"• **{name}**: cog unavailable")
+            elif name == "community-pool":
+                try:
+                    await channel.send(
+                        "Community pool — use `/toss` to contribute. Unlock rewards together as the pool grows."
+                    )
+                    results.append(f"• **{name}**: started")
+                except (discord.Forbidden, discord.HTTPException):
+                    results.append(f"• **{name}**: failed to send message")
+            else:
+                results.append(f"• **{name}**: skipped")
+
+        await interaction.followup.send(
+            f"**Reset all** completed.\n\n"
+            f"Messages deleted (excluding #rules): **{total_deleted}**\n"
+            f"Database wiped and reset.\n\n"
+            + "\n".join(results),
+            ephemeral=True,
         )
 
     @app_commands.default_permissions(manage_guild=True)

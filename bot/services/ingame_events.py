@@ -42,7 +42,11 @@ class IngameEventService:
         event_id = str(payload.get("event_id", "")).strip()
         event_type = str(payload.get("event_type", "")).strip().lower()
         game_player_id = str(payload.get("player_game_id", "")).strip().upper()
-        event_data = payload.get("payload") or {}
+        event_data = dict(payload.get("payload") or {})
+        # Fallback: some games send event-specific data at top level
+        for key in ("streak", "collect_day_utc"):
+            if key not in event_data and key in payload:
+                event_data[key] = payload[key]
 
         if not event_id or not event_type or not game_player_id:
             return {"accepted": False, "error": "missing_required_fields"}
@@ -155,12 +159,16 @@ class IngameEventService:
         game_player_id: str,
         event_data: dict[str, Any],
     ) -> dict[str, Any]:
-        collect_day = str(event_data.get("collect_day_utc") or "").strip()
-        if not collect_day:
+        collect_day_raw = str(event_data.get("collect_day_utc") or "").strip()
+        if not collect_day_raw:
             collect_day = datetime.now(timezone.utc).date().isoformat()
         else:
             try:
-                datetime.fromisoformat(collect_day)
+                # Support "YYYY-MM-DD" or "YYYY-MM-DDTHH:MM:SS" etc.
+                parsed = datetime.fromisoformat(
+                    collect_day_raw.replace("Z", "+00:00")
+                )
+                collect_day = parsed.date().isoformat()
             except ValueError:
                 collect_day = datetime.now(timezone.utc).date().isoformat()
 
@@ -183,6 +191,7 @@ class IngameEventService:
                 "already_collected_today": True,
                 "collect_day_utc": collect_day,
                 "current_streak": current_streak,
+                "total_points": total_points,
                 "points_awarded": 0,
             }
 

@@ -214,6 +214,24 @@ class DailyQuestionsCog(commands.Cog):
     async def _before_scheduler_loop(self) -> None:
         await self.bot.wait_until_ready()
 
+    async def start_in_channel(self, channel: discord.TextChannel) -> bool:
+        """Start daily questions in the given channel (e.g. after reset_all). Returns True if started."""
+        try:
+            questions = self.store.get_questions()
+        except (ValueError, OSError):
+            return False
+        if not questions:
+            return False
+        self.db.set_daily_questions_scheduler_config(
+            channel_id=int(channel.id),
+            is_active=True,
+            current_index=0,
+            last_question_id=0,
+            last_poll_message_id=0,
+            next_rotation_at=None,
+        )
+        return await self._run_rotation(channel_id=int(channel.id), force=True)
+
     @app_commands.default_permissions(manage_guild=True)
     @app_commands.command(
         name="start_daily_questions",

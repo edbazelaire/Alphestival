@@ -17,15 +17,20 @@ class Settings:
     api_shared_secret: str = ""
     dev_disable_signature: bool = False
     achievements_events_channel_id: int = 0
+    daily_rewards_events_channel_id: int = 0
     referral_percent: int = 10
 
 
 def load_settings() -> Settings:
-    load_dotenv()
+    # Don't override env vars (e.g. Railway/Render) with .env file contents
+    load_dotenv(override=False)
 
     token = os.getenv("DISCORD_TOKEN", "").strip()
     if not token:
-        raise ValueError("DISCORD_TOKEN is missing. Set it in your .env file.")
+        raise ValueError(
+            "DISCORD_TOKEN is missing. Set it in your .env file (local) or as an "
+            "environment variable (e.g. Railway Variables / Render Environment)."
+        )
 
     guild_id_raw = os.getenv("DISCORD_GUILD_ID", "").strip()
     guild_id = int(guild_id_raw) if guild_id_raw else None
@@ -45,6 +50,11 @@ def load_settings() -> Settings:
     achievements_events_channel_id = int(
         os.getenv("ACHIEVEMENTS_EVENTS_CHANNEL_ID", "0").strip() or "0"
     )
+    daily_rewards_events_channel_id = int(
+        os.getenv("DAILY_REWARDS_CHANNEL_ID", "0").strip()
+        or os.getenv("DAILY_REWARDS_EVENTS_CHANNEL_ID", "0").strip()
+        or "0"
+    )
     referral_percent = int(os.getenv("REFERRAL_PERCENT", "10").strip() or "10")
     referral_percent = max(0, min(100, referral_percent))
 
@@ -58,5 +68,6 @@ def load_settings() -> Settings:
         api_shared_secret=api_shared_secret,
         dev_disable_signature=dev_disable_signature,
         achievements_events_channel_id=achievements_events_channel_id,
+        daily_rewards_events_channel_id=daily_rewards_events_channel_id,
         referral_percent=referral_percent,
     )

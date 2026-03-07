@@ -146,7 +146,8 @@ BASE_REWARDS: dict[str, dict[str, dict[int, int]]] = {
 }
 
 GLOBAL_THRESHOLDS = (1, 3, 5, 10)
-PLAYER_UNLOCK_TIER = 5
+# Second tier (1=first, 3=second, 5=third, 10=fourth)
+PLAYER_UNLOCK_TIER = 3
 ALLOWED_MODS = {"Random", "HardCore", "NoDeath"}
 
 

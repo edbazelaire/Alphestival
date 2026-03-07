@@ -62,6 +62,14 @@ class IngameEventAnnouncer:
                 channel = await self._resolve_channel(channel_id)
                 if channel is None:
                     return
+                discord_user_id = self.db.get_discord_user_id_by_game_player_id(game_player_id)
+                mention = (
+                    f"<@{discord_user_id}>" if discord_user_id is not None else f"`{game_player_id}`"
+                )
+                achievement_id = str(result.get("achievement_id", ""))
+                congratulations = (
+                    f"Congratulations {mention} for unlocking **{achievement_id}**!"
+                )
                 coins_awarded = int(result.get("coins_awarded", 0) or 0)
                 global_reward = int(result.get("global_threshold_reward", 0) or 0)
                 mods = result.get("mods") or []
@@ -83,7 +91,7 @@ class IngameEventAnnouncer:
                         value=f"+{global_reward} :coin: to everyone",
                         inline=True,
                     )
-                await channel.send(embed=embed)
+                await channel.send(content=congratulations, embed=embed)
                 return
 
             if event_type == "daily_reward_collected":
@@ -101,6 +109,30 @@ class IngameEventAnnouncer:
                     streak=streak,
                 )
                 await self.daily_race_board.refresh_board()
+                # Fallback: send to dedicated channel when race board is inactive
+                _, _, race_board_active = self.db.get_daily_race_live_board_config()
+                if not race_board_active:
+                    channel_id = self.db.get_ingame_event_channel_id("daily_reward_collected")
+                    if channel_id > 0:
+                        channel = await self._resolve_channel(channel_id)
+                        if channel is not None:
+                            discord_user_id = self.db.get_discord_user_id_by_game_player_id(
+                                game_player_id
+                            )
+                            mention = (
+                                f"<@{discord_user_id}>" if discord_user_id else f"`{game_player_id}`"
+                            )
+                            if streak > 0:
+                                line = (
+                                    f"{mention} collected daily reward (streak: {streak}) — "
+                                    f"+{points_awarded} pts | +{daily_coins} :coin:"
+                                )
+                            else:
+                                line = (
+                                    f"{mention} collected daily reward — "
+                                    f"+{points_awarded} pts | +{daily_coins} :coin:"
+                                )
+                            await channel.send(line)
                 return
         except (discord.Forbidden, discord.HTTPException):
             logging.exception("Failed to send in-game event announcement.")

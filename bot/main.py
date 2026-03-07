@@ -143,6 +143,14 @@ async def main() -> None:
             "achievement_unlocked",
             settings.achievements_events_channel_id,
         )
+    if (
+        db.get_ingame_event_channel_id("daily_reward_collected") <= 0
+        and settings.daily_rewards_events_channel_id > 0
+    ):
+        db.set_ingame_event_channel_id(
+            "daily_reward_collected",
+            settings.daily_rewards_events_channel_id,
+        )
     bot = CasinoBot(db=db, guild_id=settings.discord_guild_id)
     announcer = IngameEventAnnouncer(
         bot=bot,
