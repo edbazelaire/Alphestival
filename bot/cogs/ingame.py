@@ -11,7 +11,7 @@ from bot.utils.admin_checks import has_admin_role
 from bot.services.achievements import (
     ARENA_LABELS,
     GLOBAL_THRESHOLDS,
-    PLAYER_UNLOCK_TIER,
+    PLAYER_UNLOCK_REWARD_MULTIPLIER,
     build_arena_reward_lines,
     compute_global_reward_for_achievement_id,
 )
@@ -46,7 +46,7 @@ class IngameCog(commands.Cog):
             title="Achievements Overview",
             description=(
                 "Rewards for **FrostArena** and **EternalMenagerie**.\n"
-                f"- Player unlock reward tier: **T{PLAYER_UNLOCK_TIER}**\n"
+                f"- Player first-time unlock: **tier 1 reward × {PLAYER_UNLOCK_REWARD_MULTIPLIER}**\n"
                 f"- Global thresholds: **{' / '.join(str(t) for t in GLOBAL_THRESHOLDS)}** completions\n"
                 "- Supported mods: Random, HardCore, NoDeath."
             ),

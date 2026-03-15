@@ -271,28 +271,19 @@ Achievement names are inferred from arena + mods:
 - EternalMenagerie + HardCore -> `HardlyHuman`
 - EternalMenagerie + Random+HardCore+NoDeath -> `ConquereorOfTheEternal`
 
-Only these 10 achievement combos are accepted.
+Events are accepted for any valid `arena` + `difficulty`; `mods` can be any subset of the allowed mods (even if that exact combo is not one of the 10 named achievements). Example: `FrostArena`, `Torment`, `["NoDeath", "Random"]` is valid.
 
-Completion count increment rules:
+**Sub-context counters:** Each event increments multiple achievement counters:
 
-- Modded achievements:
-  - `Brutal` -> `+1`
-  - `Torment` -> `+3`
-  - `Infernal` -> `+5`
-- No-mod achievements:
-  - `Easy` -> `+1`
-  - `Normal` -> `+2`
-  - `Hard` -> `+3`
-  - `Painfull` -> `+4`
-  - `Brutal` -> `+5`
-  - `Torment` -> `+6`
-  - `Infernal` -> `+7`
+- **Base:** `arena` + `difficulty` (no mods), e.g. `FrostArena:Torment`
+- **Per mod:** for each mod in `mods`, the context `arena` + `difficulty` + that single mod, e.g. `FrozenHeart:Torment` (NoDeath), `Dicey:Torment` (Random)
 
-Notes:
+So one event e.g. `FrostArena` / `Torment` / `["NoDeath", "Random"]` increments: `FrostArena:Torment`, `FrozenHeart:Torment`, `Dicey:Torment`.
 
-- Reward for unlocking player uses Tier 3 (second tier) logic.
-- Global thresholds are applied at 1 / 3 / 5 / 10 completions.
-- Duplicate achievement per player is ignored (`already_claimed`).
+**Rewards:**
+
+- **First time (per player, per achievement context):** unlock reward = **first reward (tier 1) × 10** for that context, only for the player who sent the event.
+- **Global:** counter is incremented for everyone (every event counts, even if the player already did it). When a context’s total completions reach the next threshold (1, 3, 5, 10), everyone registered via `/join` receives that context’s threshold reward.
 
 Typical success response:
 
@@ -300,14 +291,15 @@ Typical success response:
 {
   "accepted": true,
   "event_id": "2b0c8b13-80b8-42b1-a8dd-9f998516f8f7",
-  "achievement_id": "LegendOfTheNorth",
+  "achievement_id": "FrostArena:Torment",
+  "achievement_ids_updated": ["FrostArena:Torment", "FrozenHeart:Torment", "Dicey:Torment"],
   "arena": "FrostArena",
   "difficulty": "Torment",
-  "mods": ["HardCore", "Random"],
-  "count_increment": 3,
-  "completion_count": 3,
-  "coins_awarded": 60,
-  "referral_bonus_awarded": 6,
+  "mods": ["NoDeath", "Random"],
+  "completion_count": 5,
+  "completion_counts": {"FrostArena:Torment": 5, "FrozenHeart:Torment": 5, "Dicey:Torment": 4},
+  "coins_awarded": 200,
+  "referral_bonus_awarded": 20,
   "global_threshold_reward": 40,
   "global_reward_recipients": 12
 }
@@ -332,7 +324,9 @@ Fields:
 Daily reward formulas:
 
 - points granted to race: `2^streak`
-- player coins: `15 * streak`
+- player coins: `25 * 2^(streak)` (minimum 15 coins per collect; streak 0 still gets base reward)
+
+Coins are only credited to the Discord user when they have linked their in-game ID via `/join`; otherwise the event is accepted but `daily_coins_awarded` is 0 and `discord_linked` is `false`.
 
 Typical success response:
 
@@ -345,9 +339,12 @@ Typical success response:
   "points_awarded": 32,
   "total_points": 98,
   "daily_coins_awarded": 75,
-  "referral_bonus_awarded": 1
+  "referral_bonus_awarded": 1,
+  "discord_linked": true
 }
 ```
+
+If the player has not linked Discord via `/join`, `daily_coins_awarded` is 0 and `discord_linked` is `false` (event is still accepted and race points are recorded).
 
 If already collected on same day:
 

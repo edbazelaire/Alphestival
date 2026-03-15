@@ -7,9 +7,9 @@ from typing import Any
 from bot.database import Database
 from bot.services.achievements import (
     GLOBAL_THRESHOLDS,
-    PLAYER_UNLOCK_TIER,
-    completion_increment_for,
-    compute_reward,
+    PLAYER_UNLOCK_REWARD_MULTIPLIER,
+    compute_global_reward_for_achievement_id,
+    get_achievement_ids_to_increment,
     parse_achievement_info,
 )
 
@@ -80,77 +80,82 @@ class IngameEventService:
             achievement = parse_achievement_info(event_data)
         except ValueError as exc:
             return {"accepted": False, "event_id": event_id, "error": str(exc)}
-        achievement_id = achievement.achievement_id
 
-        if self.db.has_claimed_achievement(achievement_id, game_player_id):
-            return {
-                "accepted": True,
-                "event_id": event_id,
-                "already_claimed": True,
-                "achievement_id": achievement_id,
-            }
-
-        final_reward = compute_reward(
-            arena=achievement.arena,
-            difficulty=achievement.difficulty,
-            tier=PLAYER_UNLOCK_TIER,
-            mods=achievement.mods,
+        # Sub-contexts: base (arena + difficulty) + each single mod; always increment all.
+        to_increment = get_achievement_ids_to_increment(
+            achievement.arena,
+            achievement.difficulty,
+            achievement.mods,
         )
+        if not to_increment:
+            return {"accepted": False, "event_id": event_id, "error": "no_achievement_context"}
 
-        earned, referral_bonus = self._award_with_referral(game_player_id, final_reward)
-        self.db.mark_achievement_claimed(achievement_id, game_player_id)
-        increment = completion_increment_for(
-            difficulty=achievement.difficulty,
-            mods=achievement.mods,
-        )
-        previous_count, completion_count = self.db.increment_achievement_completion_by(
-            achievement_id,
-            increment,
-        )
+        total_earned = 0
+        total_referral = 0
+        all_crossed: list[int] = []
+        all_newly_unlocked: list[int] = []
+        total_threshold_reward = 0
+        completion_counts: dict[str, int] = {}
 
-        crossed_thresholds = [
-            tier for tier in GLOBAL_THRESHOLDS if previous_count < tier <= completion_count
-        ]
+        for achievement_id, _achievement_name, tier_1_reward in to_increment:
+            # First time for this player for this achievement_id: unlock reward = first tier × 10
+            if not self.db.has_claimed_achievement(achievement_id, game_player_id):
+                unlock_reward = tier_1_reward * PLAYER_UNLOCK_REWARD_MULTIPLIER
+                earned, referral_bonus = self._award_with_referral(game_player_id, unlock_reward)
+                total_earned += earned
+                total_referral += referral_bonus
+                self.db.mark_achievement_claimed(achievement_id, game_player_id)
 
-        newly_unlocked_thresholds: list[int] = []
-        for tier in crossed_thresholds:
-            if self.db.mark_global_threshold_unlocked(achievement_id, tier):
-                newly_unlocked_thresholds.append(tier)
-
-        threshold_reward = sum(
-            compute_reward(
-                arena=achievement.arena,
-                difficulty=achievement.difficulty,
-                tier=tier,
-                mods=achievement.mods,
+            # Always increment global counter (even if player already did this before).
+            previous_count, completion_count = self.db.increment_achievement_completion_by(
+                achievement_id,
+                1,
             )
-            for tier in newly_unlocked_thresholds
-        )
+            completion_counts[achievement_id] = completion_count
+
+            crossed_thresholds = [
+                t for t in GLOBAL_THRESHOLDS if previous_count < t <= completion_count
+            ]
+            newly_unlocked_thresholds: list[int] = []
+            for tier in crossed_thresholds:
+                if self.db.mark_global_threshold_unlocked(achievement_id, tier):
+                    newly_unlocked_thresholds.append(tier)
+
+            threshold_reward = sum(
+                compute_global_reward_for_achievement_id(achievement_id, tier)
+                for tier in newly_unlocked_thresholds
+            )
+            total_threshold_reward += threshold_reward
+            all_crossed.extend(crossed_thresholds)
+            all_newly_unlocked.extend(newly_unlocked_thresholds)
+
+        # Grant global threshold rewards to everyone (once per linked player).
         global_reward_recipients = 0
-        if threshold_reward > 0:
-            # Reward everyone currently registered via /join (player_links).
+        if total_threshold_reward > 0:
             for linked_game_id in self.db.get_all_game_player_ids():
                 linked_discord_user = self.db.get_discord_user_id_by_game_player_id(linked_game_id)
                 if linked_discord_user is None:
                     continue
-                self.db.add_coins(linked_discord_user, threshold_reward)
+                self.db.add_coins(linked_discord_user, total_threshold_reward)
                 global_reward_recipients += 1
 
+        primary_completion = completion_counts.get(achievement.achievement_id, 0)
         return {
             "accepted": True,
             "event_id": event_id,
-            "achievement_id": achievement_id,
+            "achievement_id": achievement.achievement_id,
+            "achievement_ids_updated": [aid for aid, _, _ in to_increment],
             "arena": achievement.arena,
             "difficulty": achievement.difficulty,
             "mods": list(achievement.mods),
-            "count_increment": increment,
-            "completion_count": completion_count,
-            "coins_awarded": earned,
-            "referral_bonus_awarded": referral_bonus,
-            "global_threshold_reward": threshold_reward,
+            "completion_count": primary_completion,
+            "completion_counts": completion_counts,
+            "coins_awarded": total_earned,
+            "referral_bonus_awarded": total_referral,
+            "global_threshold_reward": total_threshold_reward,
             "global_reward_recipients": global_reward_recipients,
-            "crossed_thresholds": crossed_thresholds,
-            "newly_unlocked_thresholds": newly_unlocked_thresholds,
+            "crossed_thresholds": all_crossed,
+            "newly_unlocked_thresholds": all_newly_unlocked,
         }
 
     def _process_daily_event(
@@ -195,9 +200,11 @@ class IngameEventService:
                 "points_awarded": 0,
             }
 
-        daily_coins = 15 * current_streak
+        # Award at least 25 coins per collect
+        daily_coins = 25 * 2**(current_streak)
 
         earned, referral_bonus = self._award_with_referral(game_player_id, daily_coins)
+        discord_linked = self.db.get_discord_user_id_by_game_player_id(game_player_id) is not None
 
         return {
             "accepted": True,
@@ -208,4 +215,5 @@ class IngameEventService:
             "total_points": total_points,
             "daily_coins_awarded": earned,
             "referral_bonus_awarded": referral_bonus,
+            "discord_linked": discord_linked,
         }

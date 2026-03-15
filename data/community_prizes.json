@@ -1,7 +1,7 @@
 {
   "rewards": [
     {
-      "name": "🪙 5000 gold",
+      "name": "💰 5000 gold",
       "coins": 100,
       "code": "35409180"
     },
@@ -46,7 +46,7 @@
       "code": "09641898"
     },
     {
-      "name": "🪙 50000 gold",
+      "name": "💰 50 000 gold",
       "coins": 4000,
       "code": "98710650"
     },
@@ -54,6 +54,36 @@
       "name": "🟡🟡 Legendary Chest x2",
       "coins": 5000,
       "code": "19641898"
+    },
+    {
+      "name": "💎 2500 gems",
+      "coins": 7500,
+      "code": "98413212"
+    },
+    {
+      "name": "🔥❄️​ Legendary Chests (Fire - Frost)",
+      "coins": 10000,
+      "code": "65498123"
+    },
+    {
+      "name": "⭐ 20 000 XP",
+      "coins": 15000,
+      "code": "11354687"
+    },
+    {
+      "name": "​☠️​💜​ Legendary Chests (Poison - Void)",
+      "coins": 20000,
+      "code": "68498133"
+    },
+    {
+      "name": "💰 100 000 gold",
+      "coins": 25000,
+      "code": "61980321"
+    },    
+    {
+      "name": "Every Legendary Chests",
+      "coins": 50000,
+      "code": "79812023"
     }
   ]
 }

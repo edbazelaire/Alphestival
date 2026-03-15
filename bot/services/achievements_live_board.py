@@ -106,9 +106,11 @@ class AchievementsLiveBoardService:
             color=discord.Color.blurple(),
         )
 
-    async def _resolve_channel(self) -> discord.TextChannel | None:
-        channel_id, _, is_active = self.db.get_achievements_live_board_config()
-        if not is_active or channel_id <= 0:
+    async def _resolve_channel(self, require_active: bool = True) -> discord.TextChannel | None:
+        channel_id, global_message_id, is_active = self.db.get_achievements_live_board_config()
+        if channel_id <= 0 or global_message_id <= 0:
+            return None
+        if require_active and not is_active:
             return None
         channel = self.bot.get_channel(channel_id)
         if channel is None:
@@ -157,19 +159,21 @@ class AchievementsLiveBoardService:
         game_player_id: str,
         completion_count: int,
     ) -> None:
-        channel = await self._resolve_channel()
+        # Resolve channel even when is_active is False so we still update the message if it exists
+        channel = await self._resolve_channel(require_active=False)
         if channel is None:
             return
 
         _, global_message_id, _ = self.db.get_achievements_live_board_config()
-        if global_message_id > 0:
-            try:
-                global_message = await channel.fetch_message(global_message_id)
-                await global_message.edit(embed=await self._build_live_board_embed())
-            except (discord.NotFound, discord.Forbidden, discord.HTTPException):
-                replacement = await channel.send(embed=await self._build_live_board_embed())
-                self.db.set_achievements_live_board_config(
-                    channel_id=int(channel.id),
-                    global_message_id=int(replacement.id),
-                    is_active=True,
-                )
+        if global_message_id <= 0:
+            return
+        try:
+            global_message = await channel.fetch_message(global_message_id)
+            await global_message.edit(embed=await self._build_live_board_embed())
+        except (discord.NotFound, discord.Forbidden, discord.HTTPException):
+            replacement = await channel.send(embed=await self._build_live_board_embed())
+            self.db.set_achievements_live_board_config(
+                channel_id=int(channel.id),
+                global_message_id=int(replacement.id),
+                is_active=True,
+            )

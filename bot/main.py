@@ -177,7 +177,17 @@ async def main() -> None:
         task.cancel()
     for task in done:
         exc = task.exception()
-        if exc:
+        if exc is not None:
+            if task is api_task and (
+                isinstance(exc, (OSError, SystemExit))
+                or getattr(exc, "errno", None) == 10048
+            ):
+                logging.error(
+                    "API server failed (often port in use). "
+                    "Bind address: %s:%s — stop the other process or set API_PORT to another port.",
+                    settings.api_host,
+                    settings.api_port,
+                )
             raise exc
 
 

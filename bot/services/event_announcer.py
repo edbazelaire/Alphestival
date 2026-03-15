@@ -47,13 +47,16 @@ class IngameEventAnnouncer:
             if event_type == "achievement_unlocked":
                 if bool(result.get("already_claimed", False)):
                     return
-                if str(result.get("achievement_id", "")).strip() and int(
-                    result.get("completion_count", 0) or 0
-                ) > 0:
+                achievement_id = str(result.get("achievement_id", "")).strip()
+                completion_count = int(result.get("completion_count", 0) or 0)
+                if achievement_id:
                     await self.live_board.on_achievement_processed(
-                        achievement_id=str(result["achievement_id"]),
+                        achievement_id=achievement_id,
                         game_player_id=game_player_id,
-                        completion_count=int(result.get("completion_count", 0) or 0),
+                        completion_count=max(
+                            completion_count,
+                            self.db.get_achievement_completion_count(achievement_id),
+                        ),
                     )
                 channel_id = (
                     self.db.get_ingame_event_channel_id("achievement_unlocked")
